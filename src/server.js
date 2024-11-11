@@ -36,9 +36,9 @@ export const setupServer = () => {
         }
     });
 
-    // Роут для отримання контакту за ID
+    
     app.get("/contacts/:contactId", async (req, res) => {
-        const { contactId } = req.params; // Отримуємо contactId з параметрів URL
+        const { contactId } = req.params; 
         try {
             const contact = await contactServices.getContactById(contactId);
 
