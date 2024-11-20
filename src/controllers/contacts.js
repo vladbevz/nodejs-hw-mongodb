@@ -1,6 +1,7 @@
 import * as contactServices from '../services/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { httpErrors, createError } from 'http-errors';
+import  httpErrors from 'http-errors';
+import createError from 'http-errors';
 
 export const getAllContacts = ctrlWrapper(async (req, res) => {
   const contacts = await contactServices.getContacts();
