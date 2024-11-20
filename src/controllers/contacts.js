@@ -2,6 +2,7 @@ import * as contactServices from '../services/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import  httpErrors from 'http-errors';
 import createError from 'http-errors';
+import mongoose from "mongoose";
 
 export const getAllContacts = ctrlWrapper(async (req, res) => {
   const contacts = await contactServices.getContacts();
@@ -14,6 +15,9 @@ export const getAllContacts = ctrlWrapper(async (req, res) => {
 
 export const getContactById = ctrlWrapper(async (req, res) => {
   const { contactId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(contactId)) {
+    throw createError(400, "Invalid contact ID format");
+}
   const contact = await contactServices.getContactById(contactId);
 
   if (!contact) {
