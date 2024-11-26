@@ -3,9 +3,26 @@ import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import  httpErrors from 'http-errors';
 import createError from 'http-errors';
 import mongoose from "mongoose";
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parseContactFilterParams } from '../utils/parseContactFilterParams.js';
 
 export const getAllContacts = ctrlWrapper(async (req, res) => {
-  const contacts = await contactServices.getContacts();
+  const { page, perPage } = parsePaginationParams(req.query);
+  console.log('Request query:', req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query, ['name', 'phoneNumber', 'email']);
+  const filter = parseContactFilterParams(req.query);
+
+  console.log('Sort params:', { sortBy, sortOrder });
+
+  const contacts = await contactServices.getContacts({
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    filter,
+  });
+
   res.json({
     status: 200,
     message: 'Successfully found contacts!',

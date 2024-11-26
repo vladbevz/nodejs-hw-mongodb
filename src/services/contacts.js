@@ -1,11 +1,38 @@
 import Contacts from '../db/models/Contacts.js';
+import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 
-export const getContacts = async () => {
+const allowedSortFields = ['name', 'phoneNumber', 'email'];
+export const getContacts = async ({ page = 1, perPage = 10,  sortBy = 'name', sortOrder = 'asc', filter = {} }) => {
   try {
-    const contacts = await Contacts.find();
-    return contacts;
+    if (!allowedSortFields.includes(sortBy)) {
+      sortBy = 'name';
+    }
+
+    if (sortOrder !== 'asc' && sortOrder !== 'desc') {
+      sortOrder = 'asc';
+    }
+    
+    const query = Contacts.find(filter);  
+
+    const skip = (page - 1) * perPage;
+
+    const sort = {};
+
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    
+    const contacts = await query.skip(skip).limit(perPage).sort(sort); 
+
+    const totalItems = await Contacts.countDocuments(filter);
+    const paginationData = calculatePaginationData({ totalItems, page, perPage });
+
+
+    return {
+      data: contacts,
+      ...paginationData,
+      
+    };
   } catch (error) {
-    throw new Error('Error fetching contacts');
+    throw new Error('Error fetching contacts: ' + error.message);
   }
 };
 
