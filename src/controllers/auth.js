@@ -30,19 +30,24 @@ export const registerController = async (req, res, next) => {
   }
 };
 
-export const loginController = async(req, res)=> {
-  const session = await authServices.login(req.body);
+export const loginController = async (req, res, next) => {
+  try {
+    const session = await authServices.login(req.body);
 
-  setupSession(res, session);
+    setupSession(res, session);
 
-  res.json({
+    res.json({
       status: 200,
       message: "Successfully login user",
       data: {
-          accessToken: session.accessToken,
-      }
-  })
-}
+        accessToken: session.accessToken,
+      },
+    });
+  } catch (err) {
+    next(err); 
+  }
+};
+
 
 export const refreshController = ctrlWrapper(async (req, res) => {
   const { refreshToken, sessionId } = req.cookies;
