@@ -19,7 +19,6 @@ const createSession = () => {
 
 export const register = async (payload) => {
   const { email, password } = payload;
-
   try {
     const user = await UserCollection.findOne({ email });
     if (user) {
@@ -93,3 +92,4 @@ export const logout = async (sessionId, refreshToken) => {
   
   return { message: "Session deleted successfully" };
 };
+

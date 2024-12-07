@@ -1,10 +1,11 @@
 import * as contactServices from '../services/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import createError from 'http-errors';
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseContactFilterParams } from '../utils/parseContactFilterParams.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 
 export const getAllContacts = ctrlWrapper(async (req, res) => {
   const { _id: userId } = req.user;
@@ -54,10 +55,16 @@ export const createContact = ctrlWrapper(async (req, res) => {
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
 
   if (!name || !phoneNumber || !contactType) {
-    throw createError(
-      400,
-      'Missing required fields: name, phoneNumber, or contactType',
-    );
+    throw createError(400, 'Missing required fields: name, phoneNumber, or contactType');
+  }
+
+  let photo = null;
+  if (req.file) {
+    try {
+      photo = await saveFileToCloudinary(req.file, 'contacts');
+    } catch (error) {
+      throw createError(500, 'Failed to upload photo to Cloudinary');
+    }
   }
 
   const newContact = await contactServices.createContact(userId, {
@@ -66,6 +73,7 @@ export const createContact = ctrlWrapper(async (req, res) => {
     email,
     isFavourite,
     contactType,
+    photo,
   });
 
   const contactWithoutVersion = newContact.toObject();
@@ -83,12 +91,22 @@ export const patchContact = ctrlWrapper(async (req, res) => {
   const { contactId } = req.params;
   const { name, phoneNumber, email, isFavourite, contactType } = req.body;
 
+  let photo = null;
+  if (req.file) {
+    try {
+      photo = await saveFileToCloudinary(req.file, 'contacts');
+    } catch (error) {
+      throw createError(500, 'Failed to upload photo to Cloudinary');
+    }
+  }
+
   const updatedContact = await contactServices.updateContact(userId, contactId, {
     name,
     phoneNumber,
     email,
     isFavourite,
     contactType,
+    photo,
   });
 
   if (!updatedContact) {
