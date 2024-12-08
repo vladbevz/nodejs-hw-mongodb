@@ -1,0 +1,31 @@
+tags:
+  - Contacts
+summary: Update a contact by ID
+operationId: updateContact
+description: Update an existing contact's details using its ID.
+parameters:
+  - name: contactId
+    in: path
+    required: true
+    description: The unique identifier of the contact.
+    schema:
+      type: string
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: ../../../components/schemas/ContactInput.yaml
+responses:
+  200:
+    description: Contact successfully updated.
+    content:
+      application/json:
+        schema:
+          $ref: ../../../components/schemas/Contact.yaml
+  404:
+    description: Contact not found.
+    content:
+      application/json:
+        schema:
+          $ref: ../../../components/responses/NotFound.yaml

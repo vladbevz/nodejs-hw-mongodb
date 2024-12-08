@@ -1,0 +1,15 @@
+type: object
+properties:
+  id:
+    type: string
+  name:
+    type: string
+  email:
+    type: string
+  createdAt:
+    type: string
+    format: date-time
+required:
+  - id
+  - name
+  - email

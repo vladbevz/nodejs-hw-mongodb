@@ -1,0 +1,20 @@
+type: object
+properties:
+  name:
+    type: string
+    example: John Doe
+  phoneNumber:
+    type: string
+    example: "+123456789"
+  email:
+    type: string
+    format: email
+    example: john.doe@example.com
+  photo:
+    type: string
+    format: url
+    example: "https://example.com/photo.jpg"
+required:
+  - name
+  - phoneNumber
+  - email

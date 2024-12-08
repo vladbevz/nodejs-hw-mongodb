@@ -1,0 +1,32 @@
+type: object
+properties:
+  id:
+    type: string
+    example: 64b1f7e2b23e4c001bb12345
+  name:
+    type: string
+    example: John Doe
+  email:
+    type: string
+    format: email
+    example: johndoe@example.com
+  phoneNumber:
+    type: string
+    example: +1234567890
+  photo:
+    type: string
+    format: url
+    example: https://example.com/photo.jpg
+  createdAt:
+    type: string
+    format: date-time
+    example: 2023-12-07T15:03:46Z
+  updatedAt:
+    type: string
+    format: date-time
+    example: 2023-12-07T15:03:46Z
+required:
+  - id
+  - name
+  - email
+  - phoneNumber
