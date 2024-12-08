@@ -116,12 +116,24 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
   });
 
 
-export const refreshController = ctrlWrapper(async (req, res) => {
+  export const refreshController = ctrlWrapper(async (req, res) => {
     const { refreshToken, sessionId } = req.cookies;
 
     if (!refreshToken || !sessionId) {
         throw createHttpError(401, "Missing refresh token or session ID");
     }
+
+    console.log("sessionId from cookies:", sessionId);
+    console.log("refreshToken from cookies:", refreshToken);
+
+    const session = await SessionCollection.findOne({ _id: ObjectId(sessionId), refreshToken });
+
+    if (!session) {
+        console.log("Session not found for sessionId:", sessionId, "and refreshToken:", refreshToken);
+        throw createHttpError(404, "Session not found");
+    }
+
+    console.log("Session found:", session);
 
     const newSession = await authServices.refreshSession({ refreshToken, sessionId });
 
