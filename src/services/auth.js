@@ -25,7 +25,7 @@ export const register = async (payload) => {
       throw createHttpError(409, "Email already in use");
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
     const newUser = await UserCollection.create({ ...payload, password: hashPassword });
 
     const { password: _, ...userWithoutPassword } = newUser.toObject();
@@ -93,3 +93,11 @@ export const logout = async (sessionId, refreshToken) => {
   return { message: "Session deleted successfully" };
 };
 
+export const hashPassword = async (password) => {
+  try {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
+  } catch (err) {
+    throw createHttpError(500, "Failed to hash password");
+  }
+};

@@ -150,6 +150,12 @@ export const logoutController = ctrlWrapper(async (req, res) => {
     if (!sessionId || !refreshToken) {
         throw createHttpError(400, "Missing sessionId or refreshToken in cookies");
     }
+    
+console.log("sessionId from cookies:", sessionId);
+console.log("refreshToken from cookies:", refreshToken);
+
+const session = await SessionCollection.findOne({ _id: sessionId, refreshToken });
+console.log("Session found:", session);
 
     await authServices.logout(sessionId, refreshToken);
 
