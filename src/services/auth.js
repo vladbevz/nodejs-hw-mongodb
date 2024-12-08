@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
@@ -26,12 +27,12 @@ export const register = async (payload) => {
     }
 
     const hashedPassword = await hashPassword(password);
-    const newUser = await UserCollection.create({ ...payload, password: hashPassword });
+    const newUser = await UserCollection.create({ ...payload, password: hashedPassword });
 
     const { password: _, ...userWithoutPassword } = newUser.toObject();
     return userWithoutPassword;
   } catch (err) {
-    throw err; 
+    throw err;
   }
 };
 
@@ -48,34 +49,48 @@ export const login = async ({ email, password }) => {
     throw createHttpError(401, "Invalid email or password");
   }
 
-  await SessionCollection.deleteOne({ userId: user._id });
-
-  
-  const newSession = createSession();
-
-  return SessionCollection.create({
-    userId: user._id,
-    ...newSession,
-  });
-
- 
-};
-
-export const refreshSession = async ({ refreshToken, sessionId }) => {
-  const existingSession = await SessionCollection.findOne({ _id: sessionId, refreshToken });
-
-  if (!existingSession || existingSession.refreshTokenValidUntil < Date.now()) {
-    throw createHttpError(401, 'Invalid or expired refresh token');
+  let session = await SessionCollection.findOne({ userId: user._id });
+  if (session) {
+    session = await SessionCollection.findOneAndUpdate(
+      { userId: user._id },
+      { $set: createSession() },
+      { new: true }
+    );
+  } else {
+    session = await SessionCollection.create({
+      userId: user._id,
+      ...createSession(),
+    });
   }
 
-  await SessionCollection.deleteOne({ _id: sessionId });
+  return session;
+};
 
-  const newSession = createSession();
 
-  return SessionCollection.create({
-    userId: existingSession.userId,
-    ...newSession,
+export const refreshSession = async ({ refreshToken, sessionId }) => {
+  console.log('sessionId from cookies:', sessionId); 
+  console.log('refreshToken from cookies:', refreshToken);
+
+  const existingSession = await SessionCollection.findOne({ 
+    _id: ObjectId(sessionId), 
+    refreshToken 
   });
+
+  if (!existingSession || existingSession.refreshTokenValidUntil < Date.now()) {
+    console.log('Session not found or expired');
+    throw createHttpError(401, 'Invalid or expired refresh token');
+  }
+  
+  console.log('Session found:', existingSession); 
+
+  
+  const updatedSession = await SessionCollection.findOneAndUpdate(
+    { _id: existingSession._id },
+    { $set: createSession() }, 
+    { new: true }
+  );
+
+  return updatedSession; 
 };
 
 export const logout = async (sessionId, refreshToken) => {
