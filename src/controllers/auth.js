@@ -4,6 +4,7 @@ import { sendResetEmail } from "../utils/sendResetEmail.js";
 import { ctrlWrapper } from "../utils/ctrlWrapper.js";
 import jwt from "jsonwebtoken";
 import UserCollection from "../db/models/User.js";
+import SessionCollection from "../db/models/Session.js";
 
 const setupSession = (res, session) => {
     const { _id, refreshToken, refreshTokenValidUntil } = session;
@@ -105,7 +106,7 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
     await user.save();
   
     
-    await authServices.logout(user._id);
+    // await authServices.logout(user._id);
   
     res.status(200).json({
       status: 200,
@@ -115,12 +116,24 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
   });
 
 
-export const refreshController = ctrlWrapper(async (req, res) => {
+  export const refreshController = ctrlWrapper(async (req, res) => {
     const { refreshToken, sessionId } = req.cookies;
 
     if (!refreshToken || !sessionId) {
         throw createHttpError(401, "Missing refresh token or session ID");
     }
+
+    console.log("sessionId from cookies:", sessionId);
+    console.log("refreshToken from cookies:", refreshToken);
+
+    const session = await SessionCollection.findOne({ _id: ObjectId(sessionId), refreshToken });
+
+    if (!session) {
+        console.log("Session not found for sessionId:", sessionId, "and refreshToken:", refreshToken);
+        throw createHttpError(404, "Session not found");
+    }
+
+    console.log("Session found:", session);
 
     const newSession = await authServices.refreshSession({ refreshToken, sessionId });
 
@@ -150,6 +163,12 @@ export const logoutController = ctrlWrapper(async (req, res) => {
     if (!sessionId || !refreshToken) {
         throw createHttpError(400, "Missing sessionId or refreshToken in cookies");
     }
+    
+console.log("sessionId from cookies:", sessionId);
+console.log("refreshToken from cookies:", refreshToken);
+
+const session = await SessionCollection.findOne({ _id: sessionId, refreshToken });
+console.log("Session found:", session);
 
     await authServices.logout(sessionId, refreshToken);
 
