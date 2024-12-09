@@ -106,7 +106,7 @@ export const sendResetEmailController = ctrlWrapper(async (req, res) => {
     await user.save();
   
     
-    await authServices.logout(user._id);
+    // await authServices.logout(user._id);
   
     res.status(200).json({
       status: 200,
